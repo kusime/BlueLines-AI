@@ -14,6 +14,7 @@ class BattleDone(BaseState):
             # cleanup the click buffer
 
         predict = game.GenerticAI.getStablePredictions()
+        print(predict)
         if (predict != None and predict[0]['label'] == game.GenerticButton.ItemsRec):
             print("Confirming the ItemsRecieved ...")
             game.Phone.tap(predict[0]['point'])
@@ -23,6 +24,12 @@ class BattleDone(BaseState):
         if (predict != None and predict[0]['label'] == game.GenerticButton.Confirm):
             print("Confirming the Confirm ...")
             game.Phone.tap(predict[0]['point'])
+            game.waiter()
+
+        # maybe encounter the new caracter recieved
+        if (predict == None):
+            print("encounter the unkown tr ")
+            game.Phone.tap((1200, 500))
             game.waiter()
 
         # check if game is go to pending page

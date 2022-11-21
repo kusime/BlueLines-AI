@@ -11,5 +11,5 @@ class BattleReady(BaseState):
         confirmPoint = game.GenerticAI.getStablePredictions()[0]['point']
         game.Phone.tap(confirmPoint)
         # switch to the BattleDoing State
-        game.waiter()
+        game.waiter(3)
         game.SwitchState(game.BattleDoing)

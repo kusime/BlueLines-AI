@@ -10,7 +10,7 @@ class Stabilizer(AI):
         super().__init__(ARCH, modelName, label)
         self.src = SRC()
 
-    def getStablePredictions(self, sample=10):
+    def getStablePredictions(self, sample=10,threshold=0.6):
         # get  frames
         frames = self.src.getCountOfFrames(sample)
         predictions = []
@@ -19,7 +19,7 @@ class Stabilizer(AI):
             print("No frames to predict maybe streaming deated")
             exit(1)
         for frame in frames:
-            predict = self.predict(frame)
+            predict = self.predict(frame,threshold)
             if predict != None:
                 predictions.append(predict)
         if (len(predictions) == 0):
