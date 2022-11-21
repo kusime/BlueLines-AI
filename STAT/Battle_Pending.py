@@ -7,7 +7,7 @@ class BattlePending(BaseState):
 
     def MonsterSelectOptimizer(self, game):
         # MonsterPredict Guard
-        if (len(self.MonsterPredict) == 0):
+        if (self.MonsterPredict == []):
             print("ther is no monster in the cache , restrat the Pending State")
             self.EnterState(game)
 
@@ -30,8 +30,24 @@ class BattlePending(BaseState):
         print("Current state is BattlePending..")
         print("ready select the Monster")
         # to do this can be auto optimized
-        self.MonsterPredict = game.MonsterAI.getStablePredictions(120, 0.3)
-        print(f"Monste predictions summary {self.MonsterPredict}")
+        self.MonsterPredict = game.MonsterAI.getStablePredictions(120, 0.4)
+        
+        if (self.MonsterPredict == None):
+            print("Enter the BattlePending state but no monster found... is there already on other state ?")
+            # check if is really ready to the Ready state
+            statePredict = game.getCurrentStateAndSetPoint()
+            print(statePredict)
+            if (statePredict != None and statePredict == game.BattleStatus.Ready):
+                # switch to the BattleReady state
+                game.SwitchState(game.BattleReady)
+                return
+            
+            if (statePredict != None and statePredict == game.BattleStatus.Pending):
+                print("Current state is BattlePending but no monster is founded , so maybe the MonsterAI is missing the target ...")
+                exit(1)
+
+        print(
+            f"Monste predictions summary : {len(self.MonsterPredict)} was founded..")
         # clear the cache
         self.currentTime = None
         self.stagedMonsterPoint = None

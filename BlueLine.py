@@ -1,13 +1,12 @@
-from AI_Stabilizer import Stabilizer
-from ADB_Power import ADB
 from time import sleep
-from random import choice
+from AI_Stabilizer import Stabilizer
 from ARCH.tflite import TFLITE
 from ARCH.yolov5 import YOLO
-from enum import Enum
-
-# BattleStatus
-
+from STAT.Battle_Pending import BattlePending
+from STAT.Battle_Doing import BattleDoing
+from STAT.Battle_Done import BattleDone
+from STAT.Battle_Ready import BattleReady
+from ADB_Power import ADB
 
 
 class BattleStatus():
@@ -17,57 +16,98 @@ class BattleStatus():
     Done = 'BattleFinished'
 
 
-if __name__ == "__main__":
+class GenerticButton():
+    Confirm = 'Confirm'
+    ItemsRec = 'ItemsRecieved'
+
+
+class GameStateManager:
+    # define the State to fit in with the status AI
+    BattleStatus = BattleStatus()
+    GenerticButton = GenerticButton()
+    # define state
+    BattlePending = BattlePending()
+    BattleReady = BattleReady()
+    BattleDoing = BattleDoing()
+    BattleDone = BattleDone()
     Phone = ADB("S8M6R20710001175")
-    BattleStatusAI = Stabilizer(TFLITE, 'BattleStatus', ['MonsterSelect',
-                                                         'ReadyBattle',
-                                                         'Battling',
-                                                         'BattleFinished'])
+    # use to the handler the genertic situation
+    GenerticAI = Stabilizer(TFLITE, 'GenerticInput', [
+                            'Confirm', 'ItemsRecieved'])
+    StatusAI = Stabilizer(TFLITE, 'BattleStatus', [
+        'MonsterSelect', 'ReadyBattle', 'Battling', 'BattleFinished'])
     MonsterAI = Stabilizer(YOLO, 'Monster', ['Monster'])
 
-    while True:
+    # Status click
+    CurrentStatusPoint = None
 
-        CurrentState = BattleStatusAI.getStablePredictions()
-        if (CurrentState == None):
-            print(f"Unheanled Situation wating ...")
-            sleep(5)
-            continue
+    def getCurrentStateAndSetPoint(self):
+        currentPredict = self.StatusAI.getStablePredictions(10)
+        if (currentPredict != None):
+            # extract the status ai return and set current point to this status
+            extract = currentPredict[0]
+            self.CurrentStatusPoint = extract['point']
+            return extract['label']
+        return currentPredict
+
+    def waiter(self, timeToWait=2):
+        try:
+            sleep(timeToWait)
+        except KeyboardInterrupt:
+            print("Exiting...")
+            exit(1)
+
+    def _setFSMInitialState(self):
+        statePredict = self.StatusAI.getStablePredictions(10)
+        print(statePredict)
+        if (statePredict == None):
+            print(f"Unheanled Situation ... Check if we have confirm button")
+            confirmPredict = self.GenerticAI.getStablePredictions()
+            if (confirmPredict != None):
+                extract = confirmPredict[0]
+                # click the confirm button
+                self.Phone.tap(extract['point'])
+            else:
+                print("Unkown situation and no confirm reachable try to tap the center")
+                self.Phone.tap((1200, 500))
+            # the revoke the _setFSMInitialState since the state is not being setted yet
+            return self._setFSMInitialState()
+
         else:
             # prepare the status
-            CurrentState = CurrentState[0]
+            statePredict = statePredict[0]
+            self.CurrentStatusPoint = statePredict['point']
 
-        print(BattleStatus.Pending)
-        if (CurrentState['label'] == BattleStatus.Pending):
-            # get Monster
-            MonsterPredict = MonsterAI.getStablePredictions()
-            print(MonsterPredict)
-            if (MonsterPredict != None):
-                monster = choice(MonsterPredict)
-                print(f"Proccessing Monster at {monster['point']}")
-                Phone.tap(monster['point'])
-                continue
-            print("Monster not found..")
-            continue
+        if (statePredict['label'] == BattleStatus.Pending):
+            self.currentState = self.BattlePending
 
-        if (CurrentState['label'] == BattleStatus.Ready):
-            # if we have already selected a monster
-            print("Current Ready to start a new battle.. Proccessing..")
-            Phone.tap(CurrentState['point'])
-            continue
+        if (statePredict['label'] == BattleStatus.Ready):
+            self.currentState = self.BattleReady
 
-        if (CurrentState['label'] == BattleStatus.Doing):
-            # if we have already selected a monster
-            print(
-                "Current we are doing battling ... waiting for battle finished.. Proccessing..")
-            sleep(5)
-            continue
+        if (statePredict['label'] == BattleStatus.Doing):
+            self.currentState = self.BattleDoing
 
-        if (CurrentState['label'] == BattleStatus.Done):
-            # if we have already selected a monster
-            # skip first page
-            Phone.tap(CurrentState['point'])
-            sleep(1)
-            # skip second page
-            Phone.tap(CurrentState['point'])
-            sleep(1)
-            # back to the page 
+        if (statePredict['label'] == BattleStatus.Done):
+            self.currentState = self.BattleDone
+
+    def __init__(self):
+        self.currentState = None
+        self._setFSMInitialState()
+        self.currentState.EnterState(self)
+
+    def Update(self):
+        # trigger every frame
+        # pass the context to the UpdateState
+        self.currentState.UpdateState(self)
+
+    def SwitchState(self, newState):
+        # switch state context
+        self.currentState = newState
+        # Enter the new state pass the state
+        self.currentState.EnterState(self)
+
+
+if __name__ == "__main__":
+    GM = GameStateManager()
+    while True:
+        GM.Update()

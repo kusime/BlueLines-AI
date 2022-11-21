@@ -7,9 +7,20 @@ class BattleReady(BaseState):
         print("Current state is BattleReady..")
 
     def UpdateState(self, game):
-        # waiting for the confirm to doing state
-        confirmPoint = game.GenerticAI.getStablePredictions()[0]['point']
-        game.Phone.tap(confirmPoint)
-        # switch to the BattleDoing State
-        game.waiter(3)
-        game.SwitchState(game.BattleDoing)
+
+        # check if still have some comfirm information
+        predict = game.GenerticAI.getStablePredictions()
+        if (predict != None and predict[0]['label'] == game.GenerticButton.Confirm):
+            print("Confirming the Confirm ...")
+            game.Phone.tap(predict[0]['point'])
+            game.waiter()
+        
+        # check if is really ready to the BattleDoing
+        statePredict = game.getCurrentStateAndSetPoint()
+        if (statePredict != None and statePredict == game.BattleStatus.Doing):
+            # switch to the BattleDoing state
+            game.SwitchState(game.BattleDoing)
+            return
+
+        # revoke the Ready State
+        self.UpdateState(game)
