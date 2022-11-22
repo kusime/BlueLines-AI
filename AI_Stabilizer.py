@@ -35,7 +35,9 @@ class Stabilizer(AI):
         filtedPredict = [
             predict for predict in predictions if len(predict) == maxPredict]
         # print(f"{sample} of frame.. MaxPredict={maxPredict} MinPredict={minPredict} FiltedPredictCount={maxPredict-minPredict}")
-        return random.choice(filtedPredict)
+        selected = random.choice(filtedPredict)
+        selected.reverse() # make a reverse
+        return selected
 
 
 if __name__ == "__main__":

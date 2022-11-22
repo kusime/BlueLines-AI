@@ -41,8 +41,11 @@ class GameStateManager:
     # Status click
     CurrentStatusPoint = None
 
-    def getCurrentStateAndSetPoint(self):
-        currentPredict = self.StatusAI.getStablePredictions(10)
+    # rouned counter
+    LoadBalancer = 0
+
+    def getCurrentStateAndSetPoint(self,threshold=0.7):
+        currentPredict = self.StatusAI.getStablePredictions(20,threshold)
         if (currentPredict != None):
             # extract the status ai return and set current point to this status
             extract = currentPredict[0]
@@ -62,14 +65,14 @@ class GameStateManager:
         print(statePredict)
         if (statePredict == None):
             print(f"Unheanled Situation ... Check if we have confirm button")
-            confirmPredict = self.GenerticAI.getStablePredictions()
+            confirmPredict = self.GenerticAI.getStablePredictions(10,  0.7)
             if (confirmPredict != None):
                 extract = confirmPredict[0]
                 # click the confirm button
                 self.Phone.tap(extract['point'])
             else:
                 print("Unkown situation and no confirm reachable try to tap the center")
-                self.Phone.tap((1200, 500))
+                self.Phone.tap((1076, 534))
             # the revoke the _setFSMInitialState since the state is not being setted yet
             return self._setFSMInitialState()
 
