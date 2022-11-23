@@ -7,7 +7,10 @@ class BattleDoing(BaseState):
         print("Current state is BattleDoing..")
 
     def UpdateState(self, game):
+        print('waiting game to finished...')
+        game.waiter(4)
         # check if game is finished
+        print("Check if game is finished")
         currentStatePredict = game.getCurrentStateAndSetPoint()
         if (currentStatePredict != None and currentStatePredict == game.BattleStatus.Done):
             # switch to the BattleDone State
@@ -30,6 +33,6 @@ class BattleDoing(BaseState):
             game.Phone.tap(predict[0]['point'])
             game.waiter()
             return
-        else:
-            game.Phone.tap((1200, 534))
-        game.waiter()
+        # the code below will make effect to the battle done code
+        # else:
+        #     game.Phone.tap((1200, 534))
