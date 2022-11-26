@@ -2,7 +2,7 @@ import torch
 
 
 class YOLO:
-    def __init__(self, modelName, mode="best"):
+    def __init__(self, modelName, mode="last"):
         self.model = torch.hub.load(
             repo_or_dir='/home/kusime/Desktop/AI/YOLO-Drowsiness-Detection/yolov5',
             model='custom',

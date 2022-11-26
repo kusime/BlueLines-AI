@@ -69,11 +69,11 @@ class GameStateManager:
     BattleDone = BattleDone()
     Phone = ADB("S8M6R20710001175")
     # use to the handler the genertic situation
-    GenerticAI = Stabilizer(TFLITE, 'GenerticInput', [
+    GenerticAI = Stabilizer(TFLITE, ['GenerticInput'], [
                             'Confirm', 'ItemsRecieved'])
-    StatusAI = Stabilizer(TFLITE, 'BattleStatus', [
-        'MonsterSelect', 'ReadyBattle', 'Battling', 'BattleFinished'])
-    MonsterAI = Stabilizer(YOLO, 'Monster', ['Monster'])
+    StatusAI = Stabilizer(TFLITE, ['BattleStatus'], [
+        'MonsterSelect', ['ReadyBattle'], 'Battling', 'BattleFinished'])
+    MonsterAI = Stabilizer(YOLO, ['Monster/Genertic','Monster/11-24'], ['Monster'])
 
     # Status click
     CurrentStatusPoint = None

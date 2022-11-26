@@ -5,9 +5,9 @@ import random
 
 
 class Stabilizer(AI):
-    def __init__(self, ARCH, modelName: str, label: list):
+    def __init__(self, ARCH, modelList: list, label: list):
         # class inherits from AI to extend its functionality
-        super().__init__(ARCH, modelName, label)
+        super().__init__(ARCH, modelList, label)
         self.src = SRC()
 
     def getStablePredictions(self, sample=10,threshold=0.7):

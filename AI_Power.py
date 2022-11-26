@@ -8,12 +8,20 @@ class AI:
         label : Custom label
     """
 
-    def __init__(self, ARCH, modelName: str, label: list):
-        self.arch = ARCH(modelName)
+    def __init__(self, ARCH, modelList: list, label: list):
+        self.archs = []
+        for modelName in modelList:
+            self.archs.append(ARCH(modelName))
         self.label = label
 
     def predict(self, frame, threshold=0.7):
-        results = self.arch.predict(frame, threshold)
+        results = []
+        # https://www.leocon.dev/blog/2021/09/how-to-flatten-a-python-list-array-and-which-one-should-you-use/
+        for arch in self.archs:
+            res = arch.predict(frame, threshold)
+            results+=res
+     
+
         if (len(results) == 0):
             return None
         cooked = []
