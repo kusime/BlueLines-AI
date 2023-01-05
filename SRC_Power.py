@@ -2,11 +2,12 @@ import cv2
 
 
 class SRC:
-    def __init__(self):
+    def __init__(self, index=0):
+        self.index = index
         pass
 
-    def getCountOfFrames(cap, count=10):
-        cap = cv2.VideoCapture(4)
+    def getCountOfFrames(self, count=10):
+        cap = cv2.VideoCapture(self.index)
         catched = []
 
         try:
@@ -23,7 +24,7 @@ class SRC:
             cap.release()
             return catched
         except:
-            print("Error Occured ... Shutting down ...")
+            print("Error Occurred ... Shutting down ...")
             cap.release()
             return None
 
